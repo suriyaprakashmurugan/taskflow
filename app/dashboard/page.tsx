@@ -6,6 +6,8 @@ import { connectDB } from "@/lib/mongodb";
 import Task from "@/models/Task";
 import TaskBoardWrapper from "@/components/TaskBoardWrapper";
 import WorkspaceSelector from "@/components/WorkspaceSelector";
+import AnalyticsToggle from "@/components/AnalyticsToggle";
+import LogoutButton from "@/components/LogoutButton";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -41,6 +43,7 @@ export default async function DashboardPage() {
               alt={session.user?.name || "User avatar"}
             />
             <span className="text-sm text-gray-600">{session.user?.name}</span>
+            <LogoutButton />
           </div>
         </div>
       </nav>
@@ -52,6 +55,7 @@ export default async function DashboardPage() {
             {tasks.length} tasks total
           </p>
         </div>
+        <AnalyticsToggle />
         <TaskBoardWrapper initialTasks={tasks} />
       </main>
     </div>
