@@ -23,8 +23,19 @@ interface AnalyticsData {
   trendData: { date: string; tasks: number }[];
 }
 
-const STATUS_COLORS = ["#94a3b8", "#3b82f6", "#22c55e"];
-const PRIORITY_COLORS = ["#22c55e", "#f59e0b", "#ef4444"];
+const STATUS_COLORS = ["#3b82f6", "#f59e0b", "#10b981"];
+const PRIORITY_COLORS = ["#10b981", "#f59e0b", "#ef4444"];
+
+const CHART_TOOLTIP_STYLE = {
+  contentStyle: {
+    background: "#1c2130",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 8,
+    color: "#f1f5f9",
+    fontSize: 12,
+  },
+  cursor: { fill: "rgba(255,255,255,0.04)" },
+};
 
 export default function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -41,8 +52,28 @@ export default function AnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="text-sm text-gray-400 py-8 text-center">
-        Loading analytics...
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "32px 0",
+          color: "var(--text-muted)",
+          fontSize: 13,
+        }}
+      >
+        <div
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            border: "2px solid var(--border-default)",
+            borderTopColor: "var(--accent-indigo)",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        Loading analytics…
       </div>
     );
   }
@@ -51,45 +82,97 @@ export default function AnalyticsDashboard() {
 
   const totalTasks = data.statusData.reduce((sum, s) => sum + s.value, 0);
   const doneTasks = data.statusData.find((s) => s.name === "Done")?.value || 0;
+  const inProgressTasks =
+    data.statusData.find((s) => s.name === "In Progress")?.value || 0;
   const completionRate = totalTasks
     ? Math.round((doneTasks / totalTasks) * 100)
     : 0;
 
   return (
-    <div className="space-y-6">
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Tasks" value={totalTasks} color="bg-blue-50 text-blue-600" />
-        <StatCard label="Done" value={doneTasks} color="bg-green-50 text-green-600" />
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Summary Stat Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+          gap: 14,
+        }}
+      >
+        <StatCard
+          label="Total Tasks"
+          value={totalTasks}
+          accentColor="#6366f1"
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Done"
+          value={doneTasks}
+          accentColor="#10b981"
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          }
+        />
         <StatCard
           label="In Progress"
-          value={data.statusData.find((s) => s.name === "In Progress")?.value || 0}
-          color="bg-yellow-50 text-yellow-600"
+          value={inProgressTasks}
+          accentColor="#f59e0b"
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          }
         />
         <StatCard
           label="Completion"
           value={`${completionRate}%`}
-          color="bg-purple-50 text-purple-600"
+          accentColor="#8b5cf6"
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          }
         />
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        {/* Tasks by Status — Pie */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: 16,
+        }}
+      >
+        {/* By Status — Pie */}
+        <div className="stat-card">
+          <h3
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--text-primary)",
+              marginBottom: 16,
+            }}
+          >
             By Status
           </h3>
-          <ResponsiveContainer width="100%" height={180}>
+          <ResponsiveContainer width="100%" height={170}>
             <PieChart>
               <Pie
                 data={data.statusData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={75}
+                innerRadius={48}
+                outerRadius={72}
                 paddingAngle={3}
                 dataKey="value"
               >
@@ -100,44 +183,77 @@ export default function AnalyticsDashboard() {
                   />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={CHART_TOOLTIP_STYLE.contentStyle}
+                cursor={false}
+              />
             </PieChart>
           </ResponsiveContainer>
-          {/* Legend */}
-          <div className="flex justify-center gap-3 mt-2">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 14,
+              marginTop: 8,
+              flexWrap: "wrap",
+            }}
+          >
             {data.statusData.map((item, i) => (
-              <div key={item.name} className="flex items-center gap-1">
+              <div
+                key={item.name}
+                style={{ display: "flex", alignItems: "center", gap: 5 }}
+              >
                 <div
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ background: STATUS_COLORS[i] }}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: STATUS_COLORS[i],
+                    flexShrink: 0,
+                  }}
                 />
-                <span className="text-xs text-gray-500">{item.name}</span>
+                <span
+                  style={{ fontSize: 11, color: "var(--text-secondary)" }}
+                >
+                  {item.name}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Tasks by Priority — Bar */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        {/* By Priority — Bar */}
+        <div className="stat-card">
+          <h3
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--text-primary)",
+              marginBottom: 16,
+            }}
+          >
             By Priority
           </h3>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={data.priorityData} barSize={32}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          <ResponsiveContainer width="100%" height={170}>
+            <BarChart data={data.priorityData} barSize={28}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.05)"
+                vertical={false}
+              />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                tick={{ fontSize: 11, fill: "#64748b" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                tick={{ fontSize: 11, fill: "#64748b" }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip />
+              <Tooltip contentStyle={CHART_TOOLTIP_STYLE.contentStyle} cursor={CHART_TOOLTIP_STYLE.cursor} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {data.priorityData.map((_, index) => (
                   <Cell
@@ -150,34 +266,45 @@ export default function AnalyticsDashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* 7 Day Trend — Line */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        {/* 7-Day Trend — Line */}
+        <div className="stat-card">
+          <h3
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--text-primary)",
+              marginBottom: 16,
+            }}
+          >
             Last 7 Days
           </h3>
-          <ResponsiveContainer width="100%" height={180}>
+          <ResponsiveContainer width="100%" height={170}>
             <LineChart data={data.trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.05)"
+                vertical={false}
+              />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                tick={{ fontSize: 11, fill: "#64748b" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                tick={{ fontSize: 11, fill: "#64748b" }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip />
+              <Tooltip contentStyle={CHART_TOOLTIP_STYLE.contentStyle} cursor={CHART_TOOLTIP_STYLE.cursor} />
               <Line
                 type="monotone"
                 dataKey="tasks"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: "#3b82f6", r: 4 }}
-                activeDot={{ r: 6 }}
+                stroke="#6366f1"
+                strokeWidth={2.5}
+                dot={{ fill: "#6366f1", r: 4, strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: "#8b5cf6" }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -187,20 +314,71 @@ export default function AnalyticsDashboard() {
   );
 }
 
-// Reusable stat card
 function StatCard({
   label,
   value,
-  color,
+  accentColor,
+  icon,
 }: {
   label: string;
   value: number | string;
-  color: string;
+  accentColor: string;
+  icon: React.ReactNode;
 }) {
   return (
-    <div className={`${color} rounded-2xl p-4`}>
-      <p className="text-xs font-medium opacity-70">{label}</p>
-      <p className="text-2xl font-bold mt-1">{value}</p>
+    <div
+      className="stat-card"
+      style={{
+        borderLeft: `3px solid ${accentColor}`,
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: 60,
+          background: `linear-gradient(90deg, ${accentColor}18, transparent)`,
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "relative",
+        }}
+      >
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          {label}
+        </p>
+        <span style={{ color: accentColor, opacity: 0.7 }}>{icon}</span>
+      </div>
+      <p
+        style={{
+          fontSize: 28,
+          fontWeight: 700,
+          color: "var(--text-primary)",
+          lineHeight: 1.2,
+          marginTop: 8,
+          position: "relative",
+        }}
+      >
+        {value}
+      </p>
     </div>
   );
 }

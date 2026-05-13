@@ -4,10 +4,12 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/mongodb";
 import Task from "@/models/Task";
-import TaskBoardWrapper from "@/components/TaskBoardWrapper";
-import WorkspaceSelector from "@/components/WorkspaceSelector";
-import AnalyticsToggle from "@/components/AnalyticsToggle";
-import LogoutButton from "@/components/LogoutButton";
+import DashboardClient from "@/components/DashboardClient";
+
+export const metadata = {
+  title: "Kanban Board — TaskFlow",
+  description: "Manage your team's tasks with a premium dark Kanban board.",
+};
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -30,34 +32,11 @@ export default async function DashboardPage() {
     updatedAt: String(task.updatedAt),
   }));
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-6 py-4">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <h1 className="font-bold text-gray-800 text-lg">TaskFlow</h1>
-          <WorkspaceSelector /> {/* 👈 no props */}
-          <div className="flex items-center gap-3">
-            <img
-              src={session.user?.image || ""}
-              className="w-8 h-8 rounded-full"
-              alt={session.user?.name || "User avatar"}
-            />
-            <span className="text-sm text-gray-600">{session.user?.name}</span>
-            <LogoutButton />
-          </div>
-        </div>
-      </nav>
+  const user = {
+    name: session.user?.name ?? null,
+    email: session.user?.email ?? null,
+    image: session.user?.image ?? null,
+  };
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-800">My Tasks</h2>
-          <p className="text-sm text-gray-400 mt-1">
-            {tasks.length} tasks total
-          </p>
-        </div>
-        <AnalyticsToggle />
-        <TaskBoardWrapper initialTasks={tasks} />
-      </main>
-    </div>
-  );
+  return <DashboardClient initialTasks={tasks} user={user} />;
 }
