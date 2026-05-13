@@ -28,6 +28,7 @@ export default async function DashboardPage() {
     status: task.status,
     priority: task.priority,
     userId: String(task.userId),
+    workspaceId: String(task.workspaceId),
     createdAt: String(task.createdAt),
     updatedAt: String(task.updatedAt),
   }));

@@ -36,8 +36,10 @@ const TaskBoard = dynamic(() => import("@/components/TaskBoard"), {
 
 export default function TaskBoardWrapper({
   initialTasks,
+  workspaceId,
 }: {
   initialTasks: SerializedTask[];
+  workspaceId: string;
 }) {
-  return <TaskBoard initialTasks={initialTasks} />;
+  return <TaskBoard initialTasks={initialTasks} workspaceId={workspaceId} />;
 }
